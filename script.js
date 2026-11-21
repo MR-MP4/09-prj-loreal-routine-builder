@@ -3,6 +3,7 @@ const categoryFilter = document.getElementById("categoryFilter");
 const productsContainer = document.getElementById("productsContainer");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
+const selectedProductsList = document.getElementById("selectedProductsList");
 
 /* Show initial placeholder until user selects a category */
 productsContainer.innerHTML = `
@@ -55,3 +56,21 @@ chatForm.addEventListener("submit", (e) => {
 
   chatWindow.innerHTML = "Connect to the OpenAI API for a response!";
 });
+
+productsContainer.addEventListener("click", (e) => {
+  const productCard = e.target.closest(".product-card");
+  if (productCard) {
+    productCard.classList.toggle("selected");
+    selectedProductsList.appendChild(productCard);
+  }
+
+});
+
+selectedProductsList.addEventListener("click", (e) => {
+  const selectedCard = e.target.closest(".product-card");
+  if (selectedCard) {
+    selectedCard.classList.remove("selected");
+    productsContainer.appendChild(selectedCard);
+  }
+});
+

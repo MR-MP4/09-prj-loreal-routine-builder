@@ -213,6 +213,14 @@ body {
   color: #666;
 }
 
+.product-card:hover {
+  border: 4px solid #ff003b;
+}
+
+.product-card.selected {
+  border: 4px solid #e3a535;
+}
+
 /* selected products */
 .selected-products {
   margin: 40px 0;
