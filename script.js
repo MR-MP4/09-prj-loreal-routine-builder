@@ -4,8 +4,19 @@ const productsContainer = document.getElementById("productsContainer");
 const chatForm = document.getElementById("chatForm");
 const chatWindow = document.getElementById("chatWindow");
 const selectedProductsList = document.getElementById("selectedProductsList");
+const generateRoutine = document.getElementById("generateRoutine");
+const userInput = document.getElementById("userInput");
 let allProducts = [];
 let selectedProducts = [];
+
+let messages = [
+  { role: 'system', content: `You are a friendly L'Oréal worker,
+   specializing in giving users advice and answering any questions they have. You help users by navigating L'Oréals extensive product catalog and giving tailored recommendations.
+
+  If a user's query is unrelated to L'Oréal or any any of their products, respond by stating that you do not know.`}
+];
+
+const workerUrl = 'https://beauty-worker.miguelrodriguez20067.workers.dev/';
 
 /* Show initial placeholder until user selects a category */
 productsContainer.innerHTML = `
@@ -81,10 +92,60 @@ categoryFilter.addEventListener("change", async (e) => {
 });
 
 /* Chat form submission handler - placeholder for OpenAI integration */
-chatForm.addEventListener("submit", (e) => {
+chatForm.addEventListener("submit", async(e) => {
   e.preventDefault();
+  chatWindow.textContent = "";
 
-  chatWindow.innerHTML = "Connect to the OpenAI API for a response!";
+  messages.push({ role: 'user', content: userInput.value });
+
+   try {
+    const response = await fetch(workerUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: messages,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    const replyText = result.choices[0].message.content;
+
+    messages.push({ role: 'assistant', content: replyText });
+    
+    const userMessage = document.createElement("div");
+    userMessage.classList.add("msg", "user");
+    userMessage.textContent = userInput.value;
+    chatWindow.appendChild(userMessage);
+
+    const assistantMessage = document.createElement("div");
+    assistantMessage.classList.add("msg", "ai");
+    assistantMessage.textContent = replyText;
+    chatWindow.appendChild(assistantMessage);
+  } catch (error) {
+    console.error('Error:', error);
+    chatWindow.textContent = 'Sorry, something went wrong. Please try again later.';
+  }
+
+  userInput.value = "";
+});
+
+generateRoutine.addEventListener("click", () => {
+  if (selectedProducts.length === 0) {
+   chatWindow.textContent = "Please select at least one product to generate a routine.";
+    return;
+  }
+
+  const routine = selectedProducts.map((product, index) => {
+    return `${index + 1}. ${product.name} (${product.brand})`;
+  }).join("\n");
+
+  chatWindow.textContent = `Your personalized routine:\n\n${routine}`;
 });
 
 productsContainer.addEventListener("click", (e) => {
